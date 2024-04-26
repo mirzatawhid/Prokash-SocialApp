@@ -46,6 +46,10 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        binding.mainProfile.setOnClickListener{
+            startActivity(Intent(this@MainActivity,ProfileActivity::class.java))
+        }
+
     }
 
     private fun signOut(){
