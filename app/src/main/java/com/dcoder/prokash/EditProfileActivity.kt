@@ -1,38 +1,29 @@
 package com.dcoder.prokash
-
-import android.annotation.SuppressLint
-import android.content.Context
+import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Address
 import android.location.Geocoder
-import android.location.Location
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
-import android.provider.OpenableColumns
 import android.text.TextUtils
 import android.util.Log
 import android.widget.ArrayAdapter
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import androidx.core.content.ContextCompat
 import androidx.core.widget.doOnTextChanged
-import androidx.fragment.app.FragmentManager
 import com.bumptech.glide.Glide
 import com.dcoder.prokash.databinding.ActivityEditProfileBinding
-import com.dcoder.prokash.databinding.ActivityMainBinding
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.material.datepicker.MaterialDatePicker
-import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.UserInfo
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
@@ -40,7 +31,6 @@ import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.storage
 import java.text.SimpleDateFormat
 import java.util.Locale
-import kotlin.math.log
 
 class EditProfileActivity : AppCompatActivity() {
 
@@ -51,6 +41,18 @@ class EditProfileActivity : AppCompatActivity() {
     private lateinit var storageRef:FirebaseStorage
     private lateinit var photoLauncher:ActivityResultLauncher<Intent>
     private var imageUri: Uri? = null
+
+    private val requestStoragePermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            // Camera permission granted
+            pickImageFromGallery()
+        } else {
+            // Camera permission denied
+            Toast.makeText(this,"Permission denied.",Toast.LENGTH_SHORT).show()
+        }
+    }
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,23 +66,24 @@ class EditProfileActivity : AppCompatActivity() {
         storageRef = Firebase.storage
 
         photoLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){result->
-            if (result!=null){
-                if (result.resultCode == RESULT_OK){
-                    //upload photo
-                    imageUri = result.data?.data
-
+            if (result.resultCode == Activity.RESULT_OK) {
+                val selectedImageUri: Uri? = result.data?.data
+                selectedImageUri?.let { uri ->
+                    // Persist URI permission
+                    try {
+                        contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                    } catch (e: SecurityException) {
+                        e.printStackTrace()
+                    }
+                    // Use Glide or another library to load the image from the URI
                     Glide.with(this)
-                        .load(imageUri)
+                        .load(uri)
                         .into(binding.editImage)
-
-                    // Upload Task with upload to directory 'file'
-                    // and name of the file remains same
-
-                }
+                    // Set the global imageUri variable
+                    imageUri = uri
                 }
             }
-
-
+        }
 
 
     //restoring the profile sata
@@ -138,12 +141,20 @@ class EditProfileActivity : AppCompatActivity() {
 
         //Change Photo
         binding.editBtnCngImage.setOnClickListener{
-            //check permission and pick photo
-            val galleryIntent = Intent(Intent.ACTION_PICK)
-            // here item is type of image
-            galleryIntent.type = "image/*"
-            // ActivityResultLauncher callback
-            photoLauncher.launch(galleryIntent)
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED) {
+                    pickImageFromGallery()
+                } else {
+                    requestStoragePermissionLauncher.launch(android.Manifest.permission.READ_MEDIA_IMAGES)
+                }
+            } else {
+                if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                    pickImageFromGallery()
+                } else {
+                    requestStoragePermissionLauncher.launch(android.Manifest.permission.READ_EXTERNAL_STORAGE)
+                }
+            }
         }
 
         //Date of Birth Picker
@@ -283,6 +294,30 @@ class EditProfileActivity : AppCompatActivity() {
             }
         }
 
+    }
+
+    private fun pickImageFromGallery() {
+        val galleryIntent = Intent(Intent.ACTION_PICK)
+        galleryIntent.type = "image/*"
+        photoLauncher.launch(galleryIntent)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        imageUri?.let { uri ->
+            try {
+                contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+            } catch (e: SecurityException) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        imageUri?.let { uri ->
+            contentResolver.releasePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+        }
     }
 
 }

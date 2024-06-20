@@ -66,7 +66,7 @@
 
 
         <LinearLayout
-            android:id="@+id/linearLayout3"
+            android:id="@+id/submit_btn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="32dp"
@@ -107,9 +107,10 @@
         android:weightSum="1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout3">
+        app:layout_constraintTop_toBottomOf="@+id/submit_btn">
 
         <LinearLayout
+            android:id="@+id/status_btn"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_marginEnd="8dp"
@@ -122,20 +123,21 @@
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/icon_status"
-                android:padding="14dp"/>
+                android:padding="14dp"
+                android:src="@drawable/icon_status" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/poppins_bold"
                 android:text="Status"
+                android:textAlignment="center"
                 android:textColor="@color/white"
-                android:textSize="20sp"
-                android:textAlignment="center"/>
+                android:textSize="20sp" />
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/verify_btn"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_marginLeft="8dp"
@@ -148,17 +150,17 @@
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/icon_verify"
-                android:padding="14dp"/>
+                android:padding="14dp"
+                android:src="@drawable/icon_verify" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/poppins_bold"
                 android:text="Verify"
+                android:textAlignment="center"
                 android:textColor="@color/white"
-                android:textSize="20sp"
-                android:textAlignment="center"/>
+                android:textSize="20sp" />
         </LinearLayout>
     </LinearLayout>
 
@@ -177,6 +179,7 @@
         app:layout_constraintTop_toBottomOf="@+id/linearLayout4">
 
         <LinearLayout
+            android:id="@+id/mapping_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginRight="8dp"
@@ -189,20 +192,21 @@
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/icon_mapping"
-                android:padding="14dp"/>
+                android:padding="14dp"
+                android:src="@drawable/icon_mapping" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/poppins_bold"
                 android:text="Mapping"
+                android:textAlignment="center"
                 android:textColor="@color/white"
-                android:textSize="20sp"
-                android:textAlignment="center"/>
+                android:textSize="20sp" />
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/forum_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="8dp"
@@ -215,17 +219,17 @@
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/icon_forum"
-                android:padding="14dp"/>
+                android:padding="14dp"
+                android:src="@drawable/icon_forum" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/poppins_bold"
                 android:text="Forum"
+                android:textAlignment="center"
                 android:textColor="@color/white"
-                android:textSize="20sp"
-                android:textAlignment="center"/>
+                android:textSize="20sp" />
         </LinearLayout>
     </LinearLayout>
 

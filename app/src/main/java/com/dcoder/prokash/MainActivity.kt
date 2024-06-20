@@ -50,6 +50,10 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this@MainActivity,ProfileActivity::class.java))
         }
 
+        binding.submitBtn.setOnClickListener{
+            startActivity(Intent(this@MainActivity,ComplaintSubmissionActivity::class.java))
+        }
+
     }
 
     private fun signOut(){

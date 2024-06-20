@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ComplaintSubmissionActivity">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/complaint_submission_background">
+
+        <ImageView
+            android:id="@+id/submit_btn_back"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_alignTop="@+id/textView8"
+            android:layout_alignBottom="@+id/textView8"
+            android:layout_alignParentStart="true"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="0dp"
+            android:src="@drawable/icon_arrow_back" />
+
+        <TextView
+            android:id="@+id/textView8"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/poppins_bold"
+            android:text="Complaint Submission"
+            android:textSize="16sp"
+            android:layout_marginTop="24dp"
+            android:layout_centerHorizontal="true"/>
+
+        <ImageView
+            android:id="@+id/submit_btn_save"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_alignTop="@+id/textView8"
+            android:layout_alignBottom="@+id/textView8"
+            android:layout_alignParentEnd="true"
+            android:layout_marginTop="0dp"
+            android:layout_marginEnd="16dp"
+            app:srcCompat="@drawable/icon_tick" />
+
+<!--        <LinearLayout-->
+<!--            android:id="@+id/layout_progress"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:orientation="horizontal"-->
+<!--            android:layout_below="@+id/submit_btn_back"-->
+<!--            android:layout_marginTop="12dp"-->
+<!--            android:layout_centerHorizontal="true">-->
+
+<!--            <ImageView-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="20dp"-->
+<!--                android:layout_marginEnd="2dp"-->
+<!--                android:layout_marginStart="4dp"-->
+<!--                android:src="@drawable/complaint_submission_arrow_back"/>-->
+
+<!--            <ImageView-->
+<!--                android:layout_width="20dp"-->
+<!--                android:layout_height="20dp"-->
+<!--                android:layout_marginStart="8dp"-->
+<!--                android:layout_marginEnd="8dp"-->
+<!--                android:src="@drawable/complaint_submit_progress_white"/>-->
+
+<!--            <ImageView-->
+<!--                android:layout_width="20dp"-->
+<!--                android:layout_height="20dp"-->
+<!--                android:layout_marginStart="8dp"-->
+<!--                android:layout_marginEnd="8dp"-->
+<!--                android:src="@drawable/complaint_submit_progress_white"/>-->
+
+<!--            <ImageView-->
+<!--                android:layout_width="20dp"-->
+<!--                android:layout_height="20dp"-->
+<!--                android:layout_marginStart="8dp"-->
+<!--                android:layout_marginEnd="8dp"-->
+<!--                android:src="@drawable/complaint_submit_progress_white"/>-->
+
+<!--            <ImageView-->
+<!--                android:layout_width="20dp"-->
+<!--                android:layout_height="20dp"-->
+<!--                android:layout_marginStart="8dp"-->
+<!--                android:layout_marginEnd="8dp"-->
+<!--                android:src="@drawable/complaint_submit_progress_white"/>-->
+
+<!--            <ImageView-->
+<!--                android:layout_width="20dp"-->
+<!--                android:layout_height="20dp"-->
+<!--                android:layout_marginStart="8dp"-->
+<!--                android:layout_marginEnd="8dp"-->
+<!--                android:src="@drawable/complaint_submit_progress_white"/>-->
+
+<!--            <ImageView-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="20dp"-->
+<!--                android:layout_marginStart="8dp"-->
+<!--                android:src="@drawable/complaint_submission_arrow_forward"/>-->
+
+<!--        </LinearLayout>-->
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:baselineAligned="false"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:paddingStart="32dp"
+            android:paddingEnd="32dp"
+            android:layout_below="@id/textView8"
+            android:layout_centerHorizontal="true"
+            android:elevation="10dp"
+            android:weightSum="5">
+
+            <LinearLayout
+                android:id="@+id/evidence_layout"
+                android:background="@drawable/complaint_submission_bar_round_back"
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:paddingStart="5dp"
+                android:paddingEnd="5dp"
+                android:gravity="center"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/evidence_image"
+                    android:layout_width="25dp"
+                    android:layout_height="wrap_content"
+                    android:adjustViewBounds="true"
+                    android:src="@drawable/ic_complaint_submit_bar_evidence_selected"/>
+
+                <TextView
+                    android:id="@+id/evidence_txt"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Evidance"
+                    android:textColor="@color/blue_main"
+                    android:fontFamily="@font/poppins_medium"
+                    android:paddingStart="5dp"/>
+
+
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:id="@+id/category_layout"
+                android:background="@android:color/transparent"
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:paddingStart="5dp"
+                android:paddingEnd="5dp"
+                android:gravity="center"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/category_image"
+                    android:layout_width="25dp"
+                    android:layout_height="wrap_content"
+                    android:adjustViewBounds="true"
+                    android:src="@drawable/ic_complaint_submit_bar_category"/>
+
+                <TextView
+                    android:id="@+id/category_txt"
+                    android:visibility="gone"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Category"
+                    android:textColor="@color/blue_main"
+                    android:fontFamily="@font/poppins_medium"
+                    android:paddingStart="5dp"/>
+
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/subcategory_layout"
+                android:background="@android:color/transparent"
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:paddingStart="5dp"
+                android:paddingEnd="5dp"
+                android:gravity="center"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/subcategory_image"
+                    android:layout_width="25dp"
+                    android:layout_height="wrap_content"
+                    android:adjustViewBounds="true"
+                    android:src="@drawable/ic_complaint_submit_bar_subcategory"/>
+
+                <TextView
+                    android:id="@+id/subcategory_txt"
+                    android:visibility="gone"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Sub-Category"
+                    android:textColor="@color/blue_main"
+                    android:fontFamily="@font/poppins_medium"
+                    android:paddingStart="5dp"/>
+
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/location_layout"
+                android:background="@android:color/transparent"
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:paddingStart="5dp"
+                android:paddingEnd="5dp"
+                android:gravity="center"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/location_image"
+                    android:layout_width="25dp"
+                    android:layout_height="wrap_content"
+                    android:adjustViewBounds="true"
+                    android:src="@drawable/ic_complaint_submit_bar_location"/>
+
+                <TextView
+                    android:id="@+id/location_txt"
+                    android:visibility="gone"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Location"
+                    android:textColor="@color/blue_main"
+                    android:fontFamily="@font/poppins_medium"
+                    android:paddingStart="5dp"/>
+
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/detail_layout"
+                android:background="@android:color/transparent"
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:paddingStart="5dp"
+                android:paddingEnd="5dp"
+                android:gravity="center"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/detail_image"
+                    android:layout_width="25dp"
+                    android:layout_height="wrap_content"
+                    android:adjustViewBounds="true"
+                    android:src="@drawable/ic_complaint_submit_bar_detail"/>
+
+                <TextView
+                    android:id="@+id/detail_txt"
+                    android:visibility="gone"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Details"
+                    android:textColor="@color/blue_main"
+                    android:fontFamily="@font/poppins_medium"
+                    android:paddingStart="5dp"/>
+
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </RelativeLayout>
+
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/fragment_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/white" />
+
+</LinearLayout>
