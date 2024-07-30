@@ -29,7 +29,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
 import com.dcoder.prokash.R
-import com.dcoder.prokash.ViewModel.ComplaintSubmissionViewModel
+import com.dcoder.prokash.viewmodel.ComplaintSubmissionViewModel
 import com.dcoder.prokash.databinding.FragmentEvidenceBinding
 import java.io.File
 import java.text.SimpleDateFormat
@@ -362,7 +362,7 @@ class EvidenceFragment : Fragment() {
         } else {
             // Query to check if the media already exists for API levels below 29
             val storageDir = Environment.getExternalStorageDirectory().toString() + "/$folderName"
-            val file = File(storageDir, displayName)
+            val file = File(storageDir, displayName!!)
             mediaExists = file.exists()
         }
 

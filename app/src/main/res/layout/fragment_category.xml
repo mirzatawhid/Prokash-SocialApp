@@ -11,18 +11,19 @@
 
 
     <androidx.cardview.widget.CardView
+        android:id="@+id/transportation"
         android:layout_width="110dp"
         android:layout_height="100dp"
         app:cardCornerRadius="5dp"
         app:cardElevation="10dp"
         android:layout_margin="5dp"
         android:layout_columnWeight="0.5"
+        android:backgroundTint="@color/blue_main"
         android:layout_rowWeight="1">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/blue_main"
             android:gravity="center"
             android:orientation="vertical"
             android:padding="10dp">
@@ -47,21 +48,22 @@
     </androidx.cardview.widget.CardView>
 
     <androidx.cardview.widget.CardView
+        android:id="@+id/institution"
         android:layout_width="110dp"
         android:layout_height="100dp"
         app:cardCornerRadius="5dp"
         app:cardElevation="10dp"
         android:layout_margin="5dp"
         android:layout_columnWeight="0.5"
-        android:layout_rowWeight="1">
+        android:layout_rowWeight="1"
+        android:backgroundTint="@color/blue_main">
 
         <LinearLayout
             android:padding="10dp"
             android:gravity="center"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:background="@color/blue_main">
+            android:orientation="vertical">
 
             <ImageView
                 android:layout_width="50dp"
@@ -83,18 +85,19 @@
     </androidx.cardview.widget.CardView>
 
     <androidx.cardview.widget.CardView
+        android:id="@+id/illegal_occurrence"
         android:layout_width="110dp"
         android:layout_height="100dp"
         app:cardCornerRadius="5dp"
         app:cardElevation="10dp"
         android:layout_margin="5dp"
         android:layout_columnWeight="0.5"
-        android:layout_rowWeight="1">
+        android:layout_rowWeight="1"
+        android:backgroundTint="@color/blue_main">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/blue_main"
             android:gravity="center"
             android:orientation="vertical"
             android:padding="10dp">
@@ -119,18 +122,19 @@
     </androidx.cardview.widget.CardView>
 
     <androidx.cardview.widget.CardView
+        android:id="@+id/natural"
         android:layout_width="110dp"
         android:layout_height="100dp"
         android:layout_margin="5dp"
         app:cardCornerRadius="5dp"
         app:cardElevation="10dp"
         android:layout_columnWeight="0.5"
-        android:layout_rowWeight="1">
+        android:layout_rowWeight="1"
+        android:backgroundTint="@color/blue_main">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/blue_main"
             android:gravity="center"
             android:orientation="vertical"
             android:padding="10dp">
@@ -155,18 +159,19 @@
     </androidx.cardview.widget.CardView>
 
     <androidx.cardview.widget.CardView
+        android:id="@+id/pollution"
         android:layout_width="110dp"
         android:layout_height="100dp"
         android:layout_margin="5dp"
         app:cardCornerRadius="5dp"
         app:cardElevation="10dp"
         android:layout_columnWeight="0.5"
-        android:layout_rowWeight="1">
+        android:layout_rowWeight="1"
+        android:backgroundTint="@color/blue_main">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/blue_main"
             android:gravity="center"
             android:orientation="vertical"
             android:padding="10dp">
@@ -191,18 +196,19 @@
     </androidx.cardview.widget.CardView>
 
     <androidx.cardview.widget.CardView
+        android:id="@+id/others"
         android:layout_width="110dp"
         android:layout_height="100dp"
         android:layout_margin="5dp"
         app:cardCornerRadius="5dp"
         app:cardElevation="10dp"
         android:layout_columnWeight="0.5"
-        android:layout_rowWeight="1">
+        android:layout_rowWeight="1"
+        android:backgroundTint="@color/blue_main">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/blue_main"
             android:gravity="center"
             android:orientation="vertical"
             android:padding="10dp">

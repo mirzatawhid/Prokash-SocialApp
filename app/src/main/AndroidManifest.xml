@@ -33,6 +33,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Prokash"
         tools:targetApi="34">
+        <meta-data
+            android:name="com.mapbox.token"
+            android:value="pk.eyJ1IjoibWlyemF0YXdoaWQiLCJhIjoiY2x5N2RwYnk2MDRnaTJpcXAwZG8ycDVqMCJ9.qMl6MmhHhoeF2HN1-OrLwg"/>
         <activity
             android:name=".ComplaintSubmissionActivity"
             android:exported="false" />

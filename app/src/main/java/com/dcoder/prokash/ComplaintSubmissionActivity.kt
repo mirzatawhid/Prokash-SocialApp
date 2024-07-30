@@ -12,11 +12,10 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import com.dcoder.prokash.ViewModel.ComplaintSubmissionViewModel
+import com.dcoder.prokash.viewmodel.ComplaintSubmissionViewModel
 import com.dcoder.prokash.complaintSubmissionFragment.CategoryFragment
 import com.dcoder.prokash.complaintSubmissionFragment.EvidenceFragment
 import com.dcoder.prokash.databinding.ActivityComplaintSubmissionBinding
-import kotlin.math.log
 
 class ComplaintSubmissionActivity : AppCompatActivity() {
     private lateinit var binding:ActivityComplaintSubmissionBinding

@@ -1,4 +1,4 @@
-package com.dcoder.prokash.ViewModel
+package com.dcoder.prokash.viewmodel
 
 import android.net.Uri
 import androidx.lifecycle.LiveData
