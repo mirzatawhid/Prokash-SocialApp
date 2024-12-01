@@ -13,6 +13,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
 import com.dcoder.prokash.R
 import com.dcoder.prokash.complaintSubmissionFragment.LocationFragment
+import com.dcoder.prokash.complaintSubmissionFragment.LocationPickingFragment
 import com.dcoder.prokash.model.SubCategoryModel
 import com.dcoder.prokash.viewmodel.ComplaintSubmissionViewModel
 import java.util.Locale
@@ -35,7 +36,7 @@ class SubCategoryAdapter(private val fragment: Fragment, private val subCategory
         val item = subCategoryList[position]
 
         val itemName = view.findViewById<TextView>(R.id.sub_category_text)
-        val itemImage = view.findViewById<ImageView>(R.id.subcategory_image)
+        val itemImage = view.findViewById<ImageView>(R.id.sub_category_image)
         val itemCard = view.findViewById<CardView>(R.id.sub_category_card)
 
         itemName.text = item.name
@@ -45,7 +46,7 @@ class SubCategoryAdapter(private val fragment: Fragment, private val subCategory
             val viewModel: ComplaintSubmissionViewModel = ViewModelProvider(fragment).get(ComplaintSubmissionViewModel::class.java)
             viewModel.setSubCategory(item.name.lowercase())
             this@SubCategoryAdapter.fragment.parentFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, LocationFragment())
+                .replace(R.id.fragment_container, LocationPickingFragment())
                 .addToBackStack(null)
                 .commit()
         }

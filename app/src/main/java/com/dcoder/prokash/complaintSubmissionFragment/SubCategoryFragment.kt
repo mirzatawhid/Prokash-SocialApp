@@ -1,6 +1,7 @@
 package com.dcoder.prokash.complaintSubmissionFragment
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -12,6 +13,7 @@ import com.dcoder.prokash.databinding.FragmentCategoryBinding
 import com.dcoder.prokash.databinding.FragmentSubCategoryBinding
 import com.dcoder.prokash.model.SubCategoryModel
 import com.dcoder.prokash.viewmodel.ComplaintSubmissionViewModel
+import kotlin.math.log
 
 class SubCategoryFragment : Fragment() {
 
@@ -31,13 +33,6 @@ class SubCategoryFragment : Fragment() {
 
         _binding = FragmentSubCategoryBinding.inflate(inflater, container, false)
         viewModel = ViewModelProvider(requireActivity()).get(ComplaintSubmissionViewModel::class.java)
-        return binding.root
-    }
-
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
         //initialize sub category data
         subCategoryList = listOf(
             SubCategoryModel("Damage Roads", R.drawable.sub_category_damage_roads, "transportation"),
@@ -52,7 +47,6 @@ class SubCategoryFragment : Fragment() {
             SubCategoryModel("Poor Infrastructure", R.drawable.sub_category_poor_infrastructure, "institution"),
             SubCategoryModel("Poor Hospital Facilities", R.drawable.sub_category_poor_hospital, "institution"),
             SubCategoryModel("Poor School Facilities", R.drawable.sub_category_poor_school, "institution"),
-            SubCategoryModel("Poor School Facilities", R.drawable.sub_category_poor_school, "institution"),
             SubCategoryModel("Poor Park Management", R.drawable.sub_category_poor_park, "institution"),
             SubCategoryModel("Plastic Factory", R.drawable.sub_category_plastic_factory, "illegal occurrence"),
             SubCategoryModel("Food Adulteration", R.drawable.sub_category_food_adulteration, "illegal occurrence"),
@@ -64,6 +58,13 @@ class SubCategoryFragment : Fragment() {
             SubCategoryModel("Water", R.drawable.sub_category_water, "pollution"),
             SubCategoryModel("Others", R.drawable.icon_category_other, "others")
         )
+        return binding.root
+    }
+
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
 
         filterByCategory(viewModel.category.value!!)
 
@@ -72,7 +73,9 @@ class SubCategoryFragment : Fragment() {
     }
     
     private fun filterByCategory(category: String){
+        Log.d("subC", "filterByCategory: "+category)
         val filterList = subCategoryList.filter { it.category == category }
+        Log.d("subC", "filterByCategory: "+filterList)
         subCategoryAdapter = SubCategoryAdapter(this,filterList)
         binding.subCategoryGridview.adapter = subCategoryAdapter
     }

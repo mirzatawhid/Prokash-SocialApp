@@ -16,6 +16,8 @@ import com.dcoder.prokash.viewmodel.ComplaintSubmissionViewModel
 import com.dcoder.prokash.complaintSubmissionFragment.CategoryFragment
 import com.dcoder.prokash.complaintSubmissionFragment.EvidenceFragment
 import com.dcoder.prokash.databinding.ActivityComplaintSubmissionBinding
+import org.maplibre.android.MapLibre
+import org.maplibre.android.WellKnownTileServer
 
 class ComplaintSubmissionActivity : AppCompatActivity() {
     private lateinit var binding:ActivityComplaintSubmissionBinding
@@ -30,6 +32,8 @@ class ComplaintSubmissionActivity : AppCompatActivity() {
         binding = ActivityComplaintSubmissionBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
+
+        MapLibre.getInstance(this)
 
         viewModel = ViewModelProvider(this).get(ComplaintSubmissionViewModel::class.java)
         anim = AnimationUtils.loadAnimation(this,R.anim.complaint_submit_bar_anim)
