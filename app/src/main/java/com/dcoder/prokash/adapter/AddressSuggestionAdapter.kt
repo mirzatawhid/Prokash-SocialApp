@@ -15,7 +15,8 @@ class AddressSuggestionAdapter(
 ) : RecyclerView.Adapter<AddressSuggestionAdapter.AddressViewHolder>() {
 
     class AddressViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val addressText: TextView = view.findViewById(R.id.address_text)
+        val addressText: TextView = view.findViewById(R.id.address_text_name)
+        val adressTextAddress: TextView = view.findViewById(R.id.address_text_address)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AddressViewHolder {
@@ -25,7 +26,9 @@ class AddressSuggestionAdapter(
 
     override fun onBindViewHolder(holder: AddressViewHolder, position: Int) {
         val address = addresses[position]
-        holder.addressText.text = address.display_name
+        val address_part = address.display_name.split(",", limit = 2);
+        holder.addressText.text = address_part[0]
+        holder.adressTextAddress.text = address_part[1]
 
         holder.itemView.setOnClickListener {
             onItemClick(address)

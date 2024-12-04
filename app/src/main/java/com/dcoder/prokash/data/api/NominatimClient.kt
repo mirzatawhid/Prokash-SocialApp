@@ -21,5 +21,7 @@ object NominatimClient {
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
-    val service: NominatimService = retrofit.create(NominatimService::class.java)
+    val searchService: NominatimService = retrofit.create(NominatimService::class.java)
+    val reverseService: NominatimReverseService = retrofit.create(NominatimReverseService::class.java)
+
 }

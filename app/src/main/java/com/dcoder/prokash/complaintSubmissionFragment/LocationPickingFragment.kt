@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.dcoder.prokash.complaintSubmissionFragment
 
 import android.annotation.SuppressLint
@@ -10,7 +12,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.FrameLayout
+import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -23,18 +26,13 @@ import com.dcoder.prokash.data.model.NominatimResponse
 import com.dcoder.prokash.databinding.FragmentLcationPickingBinding
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.maplibre.android.camera.CameraPosition
-import org.maplibre.android.camera.CameraUpdateFactory
-import org.maplibre.android.geometry.LatLng
-import org.maplibre.android.maps.MapLibreMap
-import org.maplibre.android.maps.MapLibreMapOptions
-import org.maplibre.android.maps.MapView
 import org.osmdroid.api.IGeoPoint
 import org.osmdroid.config.Configuration
 import org.osmdroid.events.MapListener
@@ -50,9 +48,6 @@ class LocationPickingFragment : Fragment() {
     private var _binding: FragmentLcationPickingBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var maplibreMap: MapLibreMap
-    private lateinit var mapView: MapView
-
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
     private lateinit var addressAdapter: AddressSuggestionAdapter
@@ -64,12 +59,13 @@ class LocationPickingFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         // Inflate the layout for this fragment
         _binding = FragmentLcationPickingBinding.inflate(inflater, container, false)
         return binding.root
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -90,14 +86,15 @@ class LocationPickingFragment : Fragment() {
             val lon = selectedAddress.lon.toDouble()
             val geoPoint = GeoPoint(lat, lon)
             binding.mapView.controller.setCenter(geoPoint)
-            binding.mapView.controller.setZoom(15.0)
+            binding.mapView.controller.setZoom(18.0)
             binding.recyclerView.visibility = View.GONE
+            //showBottomSheet(geoPoint)
         }
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerView.adapter = addressAdapter
 
         // Set default map center (latitude, longitude)
-        val startPoint = GeoPoint(23.8041, 90.4152) // Example: San Francisco
+        val startPoint = GeoPoint(23.8041, 90.4152) // Example: Dhaka, Bangladesh
         mapController.setCenter(startPoint)
 
         binding.queryText.addTextChangedListener { text ->
@@ -167,8 +164,7 @@ class LocationPickingFragment : Fragment() {
 
             private fun onDragEnd(centerPoint: IGeoPoint) {
                 // Handle the selected location based on the new center of the map
-                Toast.makeText(requireContext(), "Selected: $centerPoint", Toast.LENGTH_SHORT).show()
-                // You can also update your UI or save the selected coordinates for later use
+                showBottomSheet(centerPoint)
             }
         })
 
@@ -215,7 +211,7 @@ class LocationPickingFragment : Fragment() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == 101) {
             if (grantResults.isNotEmpty() &&
-                (grantResults[0] == PackageManager.PERMISSION_GRANTED || grantResults[1] == PackageManager.PERMISSION_GRANTED)
+                (grantResults[0] == PackageManager.PERMISSION_GRANTED || grantResults[1] == PackageManager.PERMISSION_GRANTED || grantResults[2] == PackageManager.PERMISSION_GRANTED)
             ) {
                 moveToCurrentLocation()
             } else {
@@ -231,12 +227,14 @@ class LocationPickingFragment : Fragment() {
                 val geoPoint = GeoPoint(location.latitude, location.longitude)
                 binding.mapView.controller.setCenter(geoPoint)
                 binding.mapView.controller.setZoom(20)
+                showBottomSheet(geoPoint)
             } else {
                 Toast.makeText(requireContext(), "Location not found", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun searchAddresses(query: String) {
         searchJob?.cancel() // Cancel the previous job if a new query is typed
 
@@ -244,7 +242,7 @@ class LocationPickingFragment : Fragment() {
             delay(1000) // Wait for 1 second before making the API call
 
             try {
-                val response = NominatimClient.service.searchAddress(query)
+                val response = NominatimClient.searchService.searchAddress(query)
                 addressList.clear()
                 addressList.addAll(response)
                 addressAdapter.notifyDataSetChanged()
@@ -254,6 +252,54 @@ class LocationPickingFragment : Fragment() {
                 Log.d("editerror", "searchAddresses: ${e.cause}")
             }
         }
+    }
+
+    @SuppressLint("InflateParams", "SetTextI18n")
+    private fun showBottomSheet(centerPoint: IGeoPoint) {
+
+        // Create a BottomSheetDialog
+        val bottomSheetDialog = BottomSheetDialog(requireContext())
+
+        // Inflate the bottom sheet layout
+        val bottomSheetView: View = LayoutInflater.from(requireContext())
+            .inflate(R.layout.location_bottom_sheet_layout,null)
+
+        // Set the content view for the dialog
+        bottomSheetDialog.setContentView(bottomSheetView)
+
+        // Find views in the bottom sheet and set up actions
+        val closeButton: ImageView = bottomSheetView.findViewById(R.id.sheet_close)
+        val addressTextView: TextView = bottomSheetView.findViewById(R.id.sheet_address)
+        val locationTextView: TextView = bottomSheetView.findViewById(R.id.sheet_coordinate)
+        val submitButton: Button = bottomSheetView.findViewById(R.id.sheet_submit)
+
+        searchJob?.cancel() // Cancel the previous job if a new query is typed
+
+        searchJob = debounceScope.launch {
+            try {
+                val response = NominatimClient.reverseService.reverseGeocode(
+                    centerPoint.latitude,
+                    centerPoint.longitude
+                )
+
+                addressTextView.text = response.display_name
+                locationTextView.text = "${centerPoint.latitude}, ${centerPoint.longitude}"
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                Log.d("editerror", "showBottomSheet: ${e.message}")
+            }
+        }
+        closeButton.setOnClickListener {
+            bottomSheetDialog.dismiss() // Close the dialog when the button is clicked
+        }
+
+        submitButton.setOnClickListener {
+            //select the coordinate and move to next step
+        }
+
+        // Show the bottom sheet
+        bottomSheetDialog.show()
     }
 
     override fun onDestroyView() {
