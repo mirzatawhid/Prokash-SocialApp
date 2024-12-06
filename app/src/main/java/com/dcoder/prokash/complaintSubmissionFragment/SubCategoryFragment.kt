@@ -9,11 +9,9 @@ import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
 import com.dcoder.prokash.R
 import com.dcoder.prokash.adapter.SubCategoryAdapter
-import com.dcoder.prokash.databinding.FragmentCategoryBinding
 import com.dcoder.prokash.databinding.FragmentSubCategoryBinding
-import com.dcoder.prokash.model.SubCategoryModel
+import com.dcoder.prokash.data.model.SubCategoryModel
 import com.dcoder.prokash.viewmodel.ComplaintSubmissionViewModel
-import kotlin.math.log
 
 class SubCategoryFragment : Fragment() {
 
@@ -34,6 +32,7 @@ class SubCategoryFragment : Fragment() {
         _binding = FragmentSubCategoryBinding.inflate(inflater, container, false)
         viewModel = ViewModelProvider(requireActivity()).get(ComplaintSubmissionViewModel::class.java)
         //initialize sub category data
+        //store this in local storage
         subCategoryList = listOf(
             SubCategoryModel("Damage Roads", R.drawable.sub_category_damage_roads, "transportation"),
             SubCategoryModel("Damage Vehicle", R.drawable.sub_category_damage_vehicle, "transportation"),
@@ -76,7 +75,7 @@ class SubCategoryFragment : Fragment() {
         Log.d("subC", "filterByCategory: "+category)
         val filterList = subCategoryList.filter { it.category == category }
         Log.d("subC", "filterByCategory: "+filterList)
-        subCategoryAdapter = SubCategoryAdapter(this,filterList)
+        subCategoryAdapter = SubCategoryAdapter(this,filterList,viewModel)
         binding.subCategoryGridview.adapter = subCategoryAdapter
     }
 

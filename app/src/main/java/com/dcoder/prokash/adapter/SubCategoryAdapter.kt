@@ -1,6 +1,5 @@
 package com.dcoder.prokash.adapter
 
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,16 +8,12 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.ViewModelProvider
 import com.dcoder.prokash.R
-import com.dcoder.prokash.complaintSubmissionFragment.LocationFragment
 import com.dcoder.prokash.complaintSubmissionFragment.LocationPickingFragment
-import com.dcoder.prokash.model.SubCategoryModel
+import com.dcoder.prokash.data.model.SubCategoryModel
 import com.dcoder.prokash.viewmodel.ComplaintSubmissionViewModel
-import java.util.Locale
 
-class SubCategoryAdapter(private val fragment: Fragment, private val subCategoryList: List<SubCategoryModel>) : BaseAdapter(){
+class SubCategoryAdapter(private val fragment: Fragment, private val subCategoryList: List<SubCategoryModel>, private val viewModel: ComplaintSubmissionViewModel) : BaseAdapter(){
     override fun getCount(): Int {
         return subCategoryList.size
     }
@@ -43,8 +38,8 @@ class SubCategoryAdapter(private val fragment: Fragment, private val subCategory
         itemImage.setImageResource(item.imageResourceId)
 
         itemCard.setOnClickListener{
-            val viewModel: ComplaintSubmissionViewModel = ViewModelProvider(fragment).get(ComplaintSubmissionViewModel::class.java)
             viewModel.setSubCategory(item.name.lowercase())
+            viewModel.setSelectedTab(4)
             this@SubCategoryAdapter.fragment.parentFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, LocationPickingFragment())
                 .addToBackStack(null)

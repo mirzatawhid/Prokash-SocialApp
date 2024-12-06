@@ -1,6 +1,4 @@
-package com.dcoder.prokash.model
-
-import android.graphics.drawable.Drawable
+package com.dcoder.prokash.data.model
 
 
 data class SubCategoryModel(

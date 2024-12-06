@@ -18,12 +18,14 @@ import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.widget.addTextChangedListener
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.dcoder.prokash.R
 import com.dcoder.prokash.adapter.AddressSuggestionAdapter
 import com.dcoder.prokash.data.api.NominatimClient
 import com.dcoder.prokash.data.model.NominatimResponse
-import com.dcoder.prokash.databinding.FragmentLcationPickingBinding
+import com.dcoder.prokash.databinding.FragmentLocationPickingBinding
+import com.dcoder.prokash.viewmodel.ComplaintSubmissionViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -45,7 +47,7 @@ import java.io.File
 
 class LocationPickingFragment : Fragment() {
 
-    private var _binding: FragmentLcationPickingBinding? = null
+    private var _binding: FragmentLocationPickingBinding? = null
     private val binding get() = _binding!!
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
@@ -56,12 +58,15 @@ class LocationPickingFragment : Fragment() {
     private val debounceScope = CoroutineScope(Dispatchers.Main + Job())
     private var searchJob: Job? = null
 
+    private lateinit var viewModel: ComplaintSubmissionViewModel
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         // Inflate the layout for this fragment
-        _binding = FragmentLcationPickingBinding.inflate(inflater, container, false)
+        viewModel = ViewModelProvider(requireActivity()).get(ComplaintSubmissionViewModel::class.java)
+        _binding = FragmentLocationPickingBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -284,6 +289,7 @@ class LocationPickingFragment : Fragment() {
 
                 addressTextView.text = response.display_name
                 locationTextView.text = "${centerPoint.latitude}, ${centerPoint.longitude}"
+                bottomSheetDialog.show()
             } catch (e: Exception) {
                 e.printStackTrace()
                 Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -296,10 +302,16 @@ class LocationPickingFragment : Fragment() {
 
         submitButton.setOnClickListener {
             //select the coordinate and move to next step
+            viewModel.setLocation(centerPoint.longitude,centerPoint.latitude)
+            viewModel.setSelectedTab(5)
+            bottomSheetDialog.cancel()
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, DetailsFragment())
+                .addToBackStack(null)
+                .setReorderingAllowed(true)
+                .commit()
         }
 
-        // Show the bottom sheet
-        bottomSheetDialog.show()
     }
 
     override fun onDestroyView() {
