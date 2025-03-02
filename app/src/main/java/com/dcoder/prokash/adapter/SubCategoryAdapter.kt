@@ -1,5 +1,6 @@
 package com.dcoder.prokash.adapter
 
+import android.content.res.ColorStateList
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -7,6 +8,7 @@ import android.widget.BaseAdapter
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.cardview.widget.CardView
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.dcoder.prokash.R
 import com.dcoder.prokash.complaintSubmissionFragment.LocationPickingFragment
@@ -33,6 +35,11 @@ class SubCategoryAdapter(private val fragment: Fragment, private val subCategory
         val itemName = view.findViewById<TextView>(R.id.sub_category_text)
         val itemImage = view.findViewById<ImageView>(R.id.sub_category_image)
         val itemCard = view.findViewById<CardView>(R.id.sub_category_card)
+
+        if(viewModel.subCategory.value==item.name.lowercase()){
+            itemCard.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(fragment.requireContext(), R.color.blue_selected))
+
+        }
 
         itemName.text = item.name
         itemImage.setImageResource(item.imageResourceId)

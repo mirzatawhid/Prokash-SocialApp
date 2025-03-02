@@ -14,10 +14,12 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.dcoder.prokash.viewmodel.ComplaintSubmissionViewModel
 import com.dcoder.prokash.complaintSubmissionFragment.CategoryFragment
+import com.dcoder.prokash.complaintSubmissionFragment.DetailsFragment
 import com.dcoder.prokash.complaintSubmissionFragment.EvidenceFragment
+import com.dcoder.prokash.complaintSubmissionFragment.LocationPickingFragment
+import com.dcoder.prokash.complaintSubmissionFragment.SubCategoryFragment
 import com.dcoder.prokash.databinding.ActivityComplaintSubmissionBinding
 import org.maplibre.android.MapLibre
-import org.maplibre.android.WellKnownTileServer
 
 class ComplaintSubmissionActivity : AppCompatActivity() {
     private lateinit var binding:ActivityComplaintSubmissionBinding
@@ -26,7 +28,6 @@ class ComplaintSubmissionActivity : AppCompatActivity() {
 
     private lateinit var anim:Animation
 
-    private var selectedTab = 1
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityComplaintSubmissionBinding.inflate(layoutInflater)
@@ -61,31 +62,31 @@ class ComplaintSubmissionActivity : AppCompatActivity() {
 
 
         binding.evidenceLayout.setOnClickListener {
-            if (viewModel.selectedTab.value != 1 || viewModel.selectedTab.value != null) {
+            if (viewModel.selectedTab.value != 1 || viewModel.selectedTab.value != null && viewModel.evidence.value != null) {
                 viewModel.setSelectedTab(1)
             }
         }
 
         binding.categoryLayout.setOnClickListener {
-            if (viewModel.selectedTab.value != 2 &&  viewModel.evidence.value != null) {
+            if (viewModel.selectedTab.value != 2 && viewModel.evidence.value!=null) {
                 viewModel.setSelectedTab(2)
             }
         }
 
         binding.subcategoryLayout.setOnClickListener{
-            if (viewModel.selectedTab.value != 3 &&  viewModel.category.value != null){
+            if (viewModel.selectedTab.value != 3 &&  viewModel.category.value!=null){
                 viewModel.setSelectedTab(3)
             }
         }
 
         binding.locationLayout.setOnClickListener{
-            if (selectedTab!=4){
+            if (viewModel.selectedTab.value != 4 && viewModel.subCategory.value!=null){
                 viewModel.setSelectedTab(4)
             }
         }
 
         binding.detailLayout.setOnClickListener{
-            if (selectedTab!=5){
+            if (viewModel.selectedTab.value != 5 && viewModel.locationLongitude.value!=null && viewModel.locationLatitude.value!=null){
                 viewModel.setSelectedTab(5)
             }
         }
@@ -126,7 +127,6 @@ class ComplaintSubmissionActivity : AppCompatActivity() {
 
     private fun evidenceSelected(){
         if (viewModel.selectedTab.value!=1) return
-        replaceFragment(EvidenceFragment())
         Log.d("complaintSubmissionActivity", "evidenceSelected: inside")
         binding.evidenceImage.setImageResource(R.drawable.ic_complaint_submit_bar_evidence_selected)
         binding.categoryImage.setImageResource(R.drawable.ic_complaint_submit_bar_category)
@@ -147,6 +147,8 @@ class ComplaintSubmissionActivity : AppCompatActivity() {
         binding.detailLayout.setBackgroundResource(android.R.color.transparent)
 
         binding.evidenceLayout.startAnimation(anim)
+
+        replaceFragment(EvidenceFragment())
 
     }
 
@@ -197,6 +199,8 @@ class ComplaintSubmissionActivity : AppCompatActivity() {
         binding.detailLayout.setBackgroundResource(android.R.color.transparent)
 
         binding.subcategoryLayout.startAnimation(anim)
+
+        replaceFragment(SubCategoryFragment())
     }
 
     private fun locationSelected(){
@@ -219,7 +223,7 @@ class ComplaintSubmissionActivity : AppCompatActivity() {
         binding.detailLayout.setBackgroundResource(android.R.color.transparent)
 
         binding.locationLayout.startAnimation(anim)
-        viewModel.setSelectedTab(4)
+        replaceFragment(LocationPickingFragment())
 
     }
 
@@ -244,7 +248,7 @@ class ComplaintSubmissionActivity : AppCompatActivity() {
 
         binding.detailLayout.startAnimation(anim)
 
-        viewModel.setSelectedTab(5)
+        replaceFragment(DetailsFragment())
     }
 
 //    override fun onResume() {

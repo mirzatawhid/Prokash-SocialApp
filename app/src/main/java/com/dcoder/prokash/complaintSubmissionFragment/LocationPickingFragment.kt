@@ -3,9 +3,16 @@
 package com.dcoder.prokash.complaintSubmissionFragment
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.LocationManager
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.Build
 import android.os.Bundle
 import android.preference.PreferenceManager
+import android.provider.Settings
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -26,8 +33,14 @@ import com.dcoder.prokash.data.api.NominatimClient
 import com.dcoder.prokash.data.model.NominatimResponse
 import com.dcoder.prokash.databinding.FragmentLocationPickingBinding
 import com.dcoder.prokash.viewmodel.ComplaintSubmissionViewModel
+import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.LocationSettingsRequest
+import com.google.android.gms.location.LocationSettingsResponse
+import com.google.android.gms.location.SettingsClient
+import com.google.android.gms.tasks.Task
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -60,17 +73,19 @@ class LocationPickingFragment : Fragment() {
 
     private lateinit var viewModel: ComplaintSubmissionViewModel
 
+    private val REQUEST_CHECK_SETTINGS = 1001
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         // Inflate the layout for this fragment
-        viewModel = ViewModelProvider(requireActivity()).get(ComplaintSubmissionViewModel::class.java)
+        viewModel = ViewModelProvider(requireActivity())[ComplaintSubmissionViewModel::class.java]
         _binding = FragmentLocationPickingBinding.inflate(inflater, container, false)
         return binding.root
     }
 
-    @SuppressLint("NotifyDataSetChanged")
+    @SuppressLint("NotifyDataSetChanged", "SuspiciousIndentation")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -85,6 +100,12 @@ class LocationPickingFragment : Fragment() {
         binding.mapView.setMultiTouchControls(true)
         val mapController = binding.mapView.controller
         mapController.setZoom(15.0) // Set default zoom level
+        // Set default map center (latitude, longitude)
+        var startPoint = GeoPoint(23.8041, 90.4152)
+        if (viewModel.locationLongitude.value!=null && viewModel.locationLatitude.value!=null){
+            startPoint = GeoPoint(viewModel.locationLatitude.value!!,viewModel.locationLongitude.value!!)
+        }
+        mapController.setCenter(startPoint)
 
         addressAdapter = AddressSuggestionAdapter(addressList) { selectedAddress ->
             val lat = selectedAddress.lat.toDouble()
@@ -98,9 +119,6 @@ class LocationPickingFragment : Fragment() {
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerView.adapter = addressAdapter
 
-        // Set default map center (latitude, longitude)
-        val startPoint = GeoPoint(23.8041, 90.4152) // Example: Dhaka, Bangladesh
-        mapController.setCenter(startPoint)
 
         binding.queryText.addTextChangedListener { text ->
             val query = text.toString()
@@ -116,14 +134,30 @@ class LocationPickingFragment : Fragment() {
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
 
-        binding.gpsButton.setOnClickListener {
-//          check whether location is enabled or not
-            if (checkPermissions()) {
-                moveToCurrentLocation()
-            } else {
-                requestPermissions()
-            }
-        }
+
+                binding.gpsButton.setOnClickListener {
+                    if (!isInternetAvailable(requireContext())) {
+                        Toast.makeText(requireContext(), "No internet connection", Toast.LENGTH_SHORT).show()
+                        return@setOnClickListener
+                    }
+
+                    val locationManager = requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
+                    val isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+                    val isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+
+                    if (isGpsEnabled || isNetworkEnabled) {
+                        // Location is enabled, check permissions and move to current location
+                        if (checkPermissions()) {
+                            moveToCurrentLocation()
+                        } else {
+                            requestPermissions()
+                        }
+                    } else {
+                        // Request to enable location services
+                        enableLocationServices()
+                    }
+                }
+
 
         binding.mapView.addMapListener(object : MapListener {
             private var dragHandler: android.os.Handler? = null
@@ -142,7 +176,7 @@ class LocationPickingFragment : Fragment() {
                     // Reset the drag-end handler to detect when dragging stops
                     dragHandler?.removeCallbacks(dragEndRunnable)
                     dragHandler = android.os.Handler()
-                    dragHandler?.postDelayed(dragEndRunnable, 500) // 500ms delay to detect drag end
+                    dragHandler?.postDelayed(dragEndRunnable, 1000) // 500ms delay to detect drag end
                 }
                 return true
             }
@@ -157,7 +191,7 @@ class LocationPickingFragment : Fragment() {
                     // Reset the drag-end handler to detect when dragging stops
                     dragHandler?.removeCallbacks(dragEndRunnable)
                     dragHandler = android.os.Handler()
-                    dragHandler?.postDelayed(dragEndRunnable, 500)
+                    dragHandler?.postDelayed(dragEndRunnable, 1000)
                 }
                 return true
             }
@@ -174,6 +208,54 @@ class LocationPickingFragment : Fragment() {
         })
 
 
+    }
+
+    // Function to check if internet is available (Wi-Fi or Mobile Data)
+    private fun isInternetAvailable(context: Context): Boolean {
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val network = connectivityManager.activeNetwork ?: return false
+            val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+            return capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
+                    capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)
+        } else {
+            val networkInfo = connectivityManager.activeNetworkInfo
+            return networkInfo != null && networkInfo.isConnected
+        }
+    }
+
+    // Function to request GPS enable dialog
+    private fun enableLocationServices() {
+        val locationRequest = LocationRequest.create().apply {
+            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        }
+
+        val builder = LocationSettingsRequest.Builder()
+            .addLocationRequest(locationRequest)
+            .setAlwaysShow(true) // Show dialog if needed
+
+        val settingsClient: SettingsClient = LocationServices.getSettingsClient(requireContext())
+        val task: Task<LocationSettingsResponse> = settingsClient.checkLocationSettings(builder.build())
+
+        task.addOnSuccessListener {
+            // GPS is enabled
+            Toast.makeText(requireContext(), "GPS is already enabled", Toast.LENGTH_SHORT).show()
+        }
+
+        task.addOnFailureListener { exception ->
+            if (exception is ResolvableApiException) {
+                try {
+                    // Show GPS enable dialog
+                    exception.startResolutionForResult(requireActivity(), REQUEST_CHECK_SETTINGS)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            } else {
+                // Open settings if dialog is not available
+                Toast.makeText(requireContext(), "Please enable location services", Toast.LENGTH_SHORT).show()
+                startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+            }
+        }
     }
 
 
@@ -254,7 +336,7 @@ class LocationPickingFragment : Fragment() {
             } catch (e: Exception) {
                 e.printStackTrace()
                 Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
-                Log.d("editerror", "searchAddresses: ${e.cause}")
+                Log.d("edit error", "searchAddresses: ${e.cause}")
             }
         }
     }
@@ -293,7 +375,7 @@ class LocationPickingFragment : Fragment() {
             } catch (e: Exception) {
                 e.printStackTrace()
                 Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
-                Log.d("editerror", "showBottomSheet: ${e.message}")
+                Log.d("edit error", "showBottomSheet: ${e.message}")
             }
         }
         closeButton.setOnClickListener {
