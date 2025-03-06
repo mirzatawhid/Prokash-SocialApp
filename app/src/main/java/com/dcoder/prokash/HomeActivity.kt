@@ -2,17 +2,9 @@ package com.dcoder.prokash
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.View
-import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.dcoder.prokash.databinding.ActivityHomeBinding
-import com.dcoder.prokash.databinding.ActivityLoginBinding
-import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.auth
 
 class HomeActivity : AppCompatActivity() {
     private lateinit var mAuth: FirebaseAuth
@@ -23,7 +15,7 @@ class HomeActivity : AppCompatActivity() {
         val view = binding.root
         setContentView(view)
 
-        this.mAuth = Firebase.auth
+        this.mAuth = FirebaseAuth.getInstance()
 
         binding.loginButton.setOnClickListener{
             startActivity(Intent(this,LoginActivity::class.java))

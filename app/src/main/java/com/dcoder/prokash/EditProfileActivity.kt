@@ -24,7 +24,6 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
 import com.google.firebase.storage.FirebaseStorage
@@ -60,7 +59,7 @@ class EditProfileActivity : AppCompatActivity() {
         val view = binding.root
         setContentView(view)
 
-        auth = Firebase.auth
+        auth = FirebaseAuth.getInstance()
         val userId = auth.currentUser?.uid
         db = Firebase.firestore
         storageRef = Firebase.storage
@@ -176,8 +175,8 @@ class EditProfileActivity : AppCompatActivity() {
         //Location picker
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
 
-        var lon:String=""
-        var lat:String=""
+        var lon =""
+        var lat =""
         binding.edittextLocation.setOnClickListener{
             val task = fusedLocationProviderClient.lastLocation
             if (ActivityCompat.checkSelfPermission(this,android.Manifest.permission.ACCESS_FINE_LOCATION)!=PackageManager.PERMISSION_GRANTED

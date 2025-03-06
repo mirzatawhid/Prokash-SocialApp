@@ -48,23 +48,23 @@ dependencies {
     implementation("androidx.core:core-ktx:1.15.0")
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("com.google.android.material:material:1.12.0")
-    implementation("androidx.constraintlayout:constraintlayout:2.2.0")
-    implementation("androidx.activity:activity-ktx:1.9.3")
-    implementation(platform("com.google.firebase:firebase-bom:33.6.0"))
+    implementation("androidx.constraintlayout:constraintlayout:2.2.1")
+    implementation("androidx.activity:activity-ktx:1.10.1")
+    implementation(platform("com.google.firebase:firebase-bom:33.10.0"))
     implementation("com.google.firebase:firebase-analytics")
-    implementation("com.google.firebase:firebase-auth:23.1.0")
-    implementation("com.google.android.gms:play-services-auth:21.2.0")
-    implementation("com.google.firebase:firebase-firestore-ktx:25.1.1")
-    implementation("androidx.navigation:navigation-fragment-ktx:2.8.4")
-    implementation("androidx.navigation:navigation-ui-ktx:2.8.4")
+    implementation("com.google.firebase:firebase-auth:23.2.0")
+    implementation("com.google.android.gms:play-services-auth:21.3.0")
+    implementation("com.google.firebase:firebase-firestore-ktx:25.1.2")
+    implementation("androidx.navigation:navigation-fragment-ktx:2.8.8")
+    implementation("androidx.navigation:navigation-ui-ktx:2.8.8")
     implementation("com.google.firebase:firebase-storage-ktx:21.0.1")
-    implementation("androidx.recyclerview:recyclerview:1.3.2")
+    implementation("androidx.recyclerview:recyclerview:1.4.0")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
     implementation("com.google.android.gms:play-services-location:21.3.0")
 
-    val camerax_version = "1.4.0"
+    val camerax_version = "1.4.1"
     // The following line is optional, as the core library is included indirectly by camera-camera2
     implementation("androidx.camera:camera-core:${camerax_version}")
     implementation("androidx.camera:camera-camera2:${camerax_version}")
@@ -81,17 +81,9 @@ dependencies {
     implementation ("de.hdodenhof:circleimageview:3.1.0")
 
 
-    implementation("androidx.media3:media3-exoplayer:1.5.0")
-    implementation("androidx.media3:media3-exoplayer-dash:1.5.0")
-    implementation("androidx.media3:media3-ui:1.5.0")
-
-    implementation("com.mapbox.maps:android:11.5.1")
-    implementation("com.mapbox.search:mapbox-search-android:2.6.1")
-    implementation("com.mapbox.search:mapbox-search-android-ui:2.5.0")
-    implementation("com.mapbox.search:place-autocomplete:2.6.1")
-
-//    implementation("com.mapbox.mapboxsdk:mapbox-android-sdk:9.8.0")
-//    implementation("com.mapbox.api.geocoding.v5:mapbox-geocoding:5.6.0")
+    implementation("androidx.media3:media3-exoplayer:1.5.1")
+    implementation("androidx.media3:media3-exoplayer-dash:1.5.1")
+    implementation("androidx.media3:media3-ui:1.5.1")
 
     //map try 2
     implementation("org.maplibre.gl:android-sdk:11.6.1")

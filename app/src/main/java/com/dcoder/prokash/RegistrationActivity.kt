@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.dcoder.prokash.databinding.ActivityRegistrationBinding
@@ -15,7 +14,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
 
 class RegistrationActivity : AppCompatActivity() {
@@ -37,7 +35,7 @@ class RegistrationActivity : AppCompatActivity() {
             .build()
 
         googleSignInClient = GoogleSignIn.getClient(this,gso)
-        auth = Firebase.auth
+        auth = FirebaseAuth.getInstance()
 
         binding.btnGoogleReg.setOnClickListener{
             val signInClient = googleSignInClient.signInIntent

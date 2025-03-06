@@ -1,12 +1,16 @@
 package com.dcoder.prokash.complaintSubmissionFragment
 
+import android.Manifest
+import android.app.AlertDialog
 import android.content.ContentValues
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
+import android.provider.Settings
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -24,6 +28,7 @@ import androidx.camera.video.Recorder
 import androidx.camera.video.Recording
 import androidx.camera.video.VideoCapture
 import androidx.camera.video.VideoRecordEvent
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.media3.common.MediaItem
@@ -31,6 +36,10 @@ import androidx.media3.exoplayer.ExoPlayer
 import com.dcoder.prokash.R
 import com.dcoder.prokash.viewmodel.ComplaintSubmissionViewModel
 import com.dcoder.prokash.databinding.FragmentEvidenceBinding
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -51,64 +60,10 @@ class EvidenceFragment : Fragment() {
     private var cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
     private var currentRecording: Recording? = null
     private var player: ExoPlayer? = null
+    private var isRecordingPaused = false
 
 
     private lateinit var viewModel: ComplaintSubmissionViewModel
-
-
-    //camera permission launcher
-    private val requestCameraPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
-        if (isGranted) {
-            // Camera permission granted
-            startCamera()
-        } else {
-            // Camera permission denied
-        }
-    }
-
-    //Audio permission Launcher
-    private val requestAudioPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
-        if (isGranted) {
-            // Record audio permission granted
-        } else {
-            // Record audio permission denied
-        }
-    }
-
-    //both permission launcher
-    private val requestMultiplePermissionsLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
-    ) { permissions ->
-        val cameraPermissionGranted = permissions[android.Manifest.permission.CAMERA] ?: false
-        val audioPermissionGranted = permissions[android.Manifest.permission.RECORD_AUDIO] ?: false
-        val storagePermissionGranted = permissions[android.Manifest.permission.WRITE_EXTERNAL_STORAGE] ?: false
-        val rImagePermissionGranted = permissions[if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            android.Manifest.permission.READ_MEDIA_IMAGES
-        } else {
-            permissions[android.Manifest.permission.WRITE_EXTERNAL_STORAGE] ?: false
-        }] ?: false
-        val rVideoPermissionGranted = permissions[if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            android.Manifest.permission.READ_MEDIA_VIDEO
-        } else {
-            permissions[android.Manifest.permission.WRITE_EXTERNAL_STORAGE] ?: false
-        }] ?: false
-
-        if (cameraPermissionGranted && audioPermissionGranted && storagePermissionGranted) {
-            startCamera()
-        } else if (cameraPermissionGranted && audioPermissionGranted && rVideoPermissionGranted && rImagePermissionGranted) {
-            startCamera()
-        } else {
-            Toast.makeText(requireContext(), "Permissions not granted.", Toast.LENGTH_SHORT).show()
-            Log.d("permissionList", "Permissions list: $permissions")
-        }
-    }
-
-
-
 
 
     override fun onCreateView(
@@ -121,48 +76,23 @@ class EvidenceFragment : Fragment() {
     }
 
 
-
-
-
+    // In onViewCreated() method, check and request permissions and open camera
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         cameraExecutor = Executors.newSingleThreadExecutor()
 
-        if(viewModel.evidence.value != null){
-            showPreview(viewModel.evidence.value!!,viewModel.isImage.value!!)
-        }else{
-
-        if (checkPermissions()) {
-            startCamera()
+        if (viewModel.evidence.value != null) {
+            showPreview(viewModel.evidence.value!!, viewModel.isImage.value!!)
         } else {
-            if (Build.VERSION.SDK_INT >= 33) {
-                requestMultiplePermissionsLauncher.launch(
-                    arrayOf(
-                        android.Manifest.permission.CAMERA,
-                        android.Manifest.permission.RECORD_AUDIO,
-                        android.Manifest.permission.READ_MEDIA_VIDEO,
-                        android.Manifest.permission.READ_MEDIA_IMAGES
-                    )
-                )
-            } else {
-                requestMultiplePermissionsLauncher.launch(
-                    arrayOf(
-                        android.Manifest.permission.CAMERA,
-                        android.Manifest.permission.RECORD_AUDIO,
-                        android.Manifest.permission.WRITE_EXTERNAL_STORAGE
-                    )
-                )
-            }
+            checkAndRequestPermissions()
         }
-        }
+
         binding.captureButton.setOnClickListener { takePhoto() }
         binding.recordButton.setOnClickListener { captureVideo() }
+        binding.pauseResumeButton.setOnClickListener { pauseResumeRecording() }
         binding.switchCameraButton.setOnClickListener { switchCamera() }
     }
-
-
-
 
 
     private fun switchCamera() {
@@ -173,9 +103,6 @@ class EvidenceFragment : Fragment() {
         }
         startCamera()
     }
-
-
-
 
 
     private fun captureVideo() {
@@ -189,22 +116,36 @@ class EvidenceFragment : Fragment() {
         if (currentRecording != null) {
             currentRecording?.stop()
             currentRecording = null
-            binding.recordButton.text = "Record"
+            isRecordingPaused = false
+            binding.recordButton.background = ContextCompat.getDrawable(requireContext(), R.drawable.complaint_submission_evidence_video)
+            binding.pauseResumeButton.visibility = View.GONE
+            binding.captureButton.visibility = View.VISIBLE
         } else {
+            if (ActivityCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.RECORD_AUDIO
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                permissionLauncher.launch(arrayOf(Manifest.permission.RECORD_AUDIO))
+                return
+            }
             currentRecording = videoCapture.output
-                .prepareRecording(requireContext(), outputOptions)
+                .prepareRecording(requireContext(), outputOptions).withAudioEnabled()
                 .start(ContextCompat.getMainExecutor(requireContext())) { recordEvent ->
                     when (recordEvent) {
                         is VideoRecordEvent.Start -> {
-                            binding.recordButton.text = "Stop Recording"
+                            binding.recordButton.background = ContextCompat.getDrawable(requireContext(), R.drawable.complaint_submission_evidence_stop)
+                            binding.captureButton.visibility= View.GONE
+                            binding.pauseResumeButton.visibility = View.VISIBLE
                         }
                         is VideoRecordEvent.Finalize -> {
                             val msg = "Video capture succeeded: ${videoFile.absolutePath}"
                             Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
                             showPreview(Uri.fromFile(videoFile), false)
-
                             Log.d("CameraXApp", msg)
-                            binding.recordButton.text = "Record"
+                            binding.recordButton.background = ContextCompat.getDrawable(requireContext(), R.drawable.complaint_submission_evidence_video)
+                            binding.pauseResumeButton.visibility = View.GONE
+                            //binding.captureButton.visibility = View.VISIBLE
                         }
                     }
                 }
@@ -213,6 +154,18 @@ class EvidenceFragment : Fragment() {
 
 
 
+    private fun pauseResumeRecording() {
+        if (currentRecording != null) {
+            if (isRecordingPaused) {
+                currentRecording?.resume()
+                binding.pauseResumeButton.background = ContextCompat.getDrawable(requireContext(),R.drawable.complaint_submission_evidence_pause)
+            } else {
+                currentRecording?.pause()
+                binding.pauseResumeButton.background = ContextCompat.getDrawable(requireContext(),R.drawable.complaint_submission_evidence_resume)
+            }
+            isRecordingPaused = !isRecordingPaused
+        }
+    }
 
 
 
@@ -224,24 +177,11 @@ class EvidenceFragment : Fragment() {
             SimpleDateFormat(FILENAME_FORMAT, Locale.US).format(System.currentTimeMillis()) + ".jpg"
         )
 
-        val contentValues = ContentValues().apply {
-            put(MediaStore.Images.Media.DISPLAY_NAME, photoFile.name)
-            put(MediaStore.Images.Media.MIME_TYPE, "image/jpg")
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/Prokash")
-            }else {
-                put(MediaStore.Images.Media.DATA, photoFile.absolutePath)
-            }
-        }
-
-        val outputOptions = ImageCapture.OutputFileOptions.Builder(
-            requireContext().contentResolver,
-            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-            contentValues
-        ).build()
+        // Use file:// URI scheme directly
+        val photoUri = Uri.fromFile(photoFile)
 
         imageCapture.takePicture(
-            outputOptions,
+            ImageCapture.OutputFileOptions.Builder(photoFile).build(),
             ContextCompat.getMainExecutor(requireContext()),
             object : ImageCapture.OnImageSavedCallback {
                 override fun onError(exc: ImageCaptureException) {
@@ -249,16 +189,15 @@ class EvidenceFragment : Fragment() {
                 }
 
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                    val savedUri = output.savedUri ?: Uri.fromFile(photoFile)
-                    showPreview(Uri.fromFile(photoFile), true)
-                    val msg = "Photo capture succeeded: $savedUri /n Location: ${savedUri.path}"
+                    // Use the URI with file:// scheme
+                    showPreview(photoUri, true)
+                    val msg = "Photo capture succeeded: $photoUri /n Location: ${photoUri.path}"
                     Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
                     Log.d("CameraXApp", "Photo capture succeeded: $msg")
                 }
-            })
+            }
+        )
     }
-
-
 
 
 
@@ -267,7 +206,7 @@ class EvidenceFragment : Fragment() {
         cameraProviderFuture.addListener({
             val cameraProvider = cameraProviderFuture.get()
             val preview = Preview.Builder().build().also {
-                it.setSurfaceProvider(binding.viewFinder.surfaceProvider)
+                it.surfaceProvider = binding.viewFinder.surfaceProvider
             }
 
             imageCapture = ImageCapture.Builder().build()
@@ -288,16 +227,17 @@ class EvidenceFragment : Fragment() {
 
 
 
-
     private fun showPreview(uri: Uri, isImage: Boolean) {
         binding.viewFinder.visibility = View.GONE
         binding.previewLayout.visibility = View.VISIBLE
         binding.imagePreview.visibility = if (isImage) View.VISIBLE else View.GONE
         binding.videoPreview.visibility = if (!isImage) View.VISIBLE else View.GONE
         binding.previewButtons.visibility = View.VISIBLE
-        binding.captureButton.visibility = View.GONE
+
         binding.recordButton.visibility = View.GONE
         binding.switchCameraButton.visibility = View.GONE
+        binding.galleryButton.visibility = View.GONE
+        binding.captureButton.visibility = View.GONE
 
         if (isImage) {
             binding.imagePreview.setImageURI(uri)
@@ -322,11 +262,8 @@ class EvidenceFragment : Fragment() {
     }
 
 
-
-
-
     private fun setupVideoPlayer(uri: Uri) {
-        Log.d("setupVideo", "setupVideoPlayer: "+uri)
+        Log.d("setupVideo", "setupVideoPlayer: $uri")
         player = ExoPlayer.Builder(requireContext()).build().also {
             binding.videoPreview.player = it
             val mediaItem = MediaItem.fromUri(uri)
@@ -337,84 +274,112 @@ class EvidenceFragment : Fragment() {
     }
 
 
-
-
     private fun saveMedia(uri: Uri, isImage: Boolean) {
-        val displayName = uri.lastPathSegment
-        val folderName = "ProkashMedia"
+        val context = context?.applicationContext ?: return  // Avoid using requireContext()
+        val resolver = context.contentResolver
+        val folderName = "PrakashMedia"
         val mimeType = if (isImage) "image/jpeg" else "video/mp4"
-        val contentUri = if (isImage) MediaStore.Images.Media.EXTERNAL_CONTENT_URI else MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+        val mediaCollection =
+            if (isImage) MediaStore.Images.Media.EXTERNAL_CONTENT_URI else MediaStore.Video.Media.EXTERNAL_CONTENT_URI
 
-        val resolver = requireContext().contentResolver
-        var mediaExists = false
+        val displayName = "IMG_${System.currentTimeMillis()}.jpg".takeIf { isImage }
+            ?: "VID_${System.currentTimeMillis()}.mp4"
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            // Query to check if the media already exists for API level 29 and above
-            val projection = arrayOf(MediaStore.MediaColumns.DISPLAY_NAME)
-            val selection = "${MediaStore.MediaColumns.DISPLAY_NAME} = ? AND ${MediaStore.MediaColumns.RELATIVE_PATH} = ?"
-            val selectionArgs = arrayOf(displayName, Environment.DIRECTORY_DOCUMENTS + "/$folderName/")
+        CoroutineScope(Dispatchers.IO).launch {
+            var mediaExists = false
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                val selection = "${MediaStore.MediaColumns.DISPLAY_NAME} = ? AND ${MediaStore.MediaColumns.RELATIVE_PATH} = ?"
+                val selectionArgs = arrayOf(displayName, Environment.DIRECTORY_PICTURES + "/$folderName/")
 
-            resolver.query(contentUri, projection, selection, selectionArgs, null)?.use { cursor ->
-                if (cursor.moveToFirst()) {
-                    mediaExists = true
-                }
+                resolver.query(mediaCollection, arrayOf(MediaStore.MediaColumns.DISPLAY_NAME), selection, selectionArgs, null)
+                    ?.use { cursor ->
+                        if (cursor.moveToFirst()) {
+                            mediaExists = true
+                        }
+                    }
+            } else {
+                val storageDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), folderName)
+                val file = File(storageDir, displayName)
+                mediaExists = file.exists()
             }
-        } else {
-            // Query to check if the media already exists for API levels below 29
-            val storageDir = Environment.getExternalStorageDirectory().toString() + "/$folderName"
-            val file = File(storageDir, displayName!!)
-            mediaExists = file.exists()
-        }
 
-        if (mediaExists) {
-            Toast.makeText(requireContext(), "Media already exists in the gallery", Toast.LENGTH_SHORT).show()
-        } else {
+            if (mediaExists) {
+                withContext(Dispatchers.Main) {
+                    context.let {
+                        Toast.makeText(it, "Media already exists", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                return@launch
+            }
+
             val contentValues = ContentValues().apply {
                 put(MediaStore.MediaColumns.DISPLAY_NAME, displayName)
                 put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOCUMENTS + "/$folderName")
+                    put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/$folderName")
                 } else {
-                    val storageDir = Environment.getExternalStorageDirectory().toString() + "/$folderName"
-                    val file = File(storageDir)
-                    if (!file.exists()) {
-                        file.mkdirs()
-                    }
-                    put(MediaStore.MediaColumns.DATA, "$storageDir/$displayName")
+                    val storageDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), folderName)
+                    if (!storageDir.exists()) storageDir.mkdirs()
+                    put(MediaStore.MediaColumns.DATA, File(storageDir, displayName).absolutePath)
                 }
             }
 
-            resolver.insert(contentUri, contentValues)?.let { uri ->
-                resolver.openOutputStream(uri)?.use { outputStream ->
-                    resolver.openInputStream(uri)?.use { inputStream ->
-                        inputStream.copyTo(outputStream)
+            val newUri = resolver.insert(mediaCollection, contentValues)
+            if (newUri != null) {
+                try {
+                    resolver.openOutputStream(newUri)?.use { outputStream ->
+                        resolver.openInputStream(uri)?.use { inputStream ->
+                            inputStream.copyTo(outputStream)
+                        }
+                    }
+                    withContext(Dispatchers.Main) {
+                        context.let {
+                            Toast.makeText(it, "Media saved to gallery", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+
+                    //File(uri.path!!).takeIf { it.exists() }?.delete()
+
+                    withContext(Dispatchers.Main) {
+                        if (isAdded) {  // Only call replaceFragment() if fragment is still attached
+                            viewModel.setEvidence(uri)
+                            viewModel.setSelectedTab(2)
+                            viewModel.setIsImage(isImage)
+                            replaceFragment(CategoryFragment())
+                        } else {
+                            Log.e("SaveMediaError", "Fragment was detached before replaceFragment()")
+                        }
+                    }
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        context.let {
+                            Toast.makeText(it, "Error saving media: ${e.message}", Toast.LENGTH_SHORT).show()
+
+                        }
+                        Log.e("SaveMediaError", "Exception while saving media", e)
+                    }
+                    e.printStackTrace()
+                }
+            } else {
+                withContext(Dispatchers.Main) {
+                    context.let {
+                        Toast.makeText(it, "Failed to create media file", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
-
-            viewModel.setEvidence(uri)
-            viewModel.setSelectedTab(2)
-            viewModel.setIsImage(isImage)
-            Toast.makeText(requireContext(), "Media saved to gallery", Toast.LENGTH_SHORT).show()
-
-            replaceFragment(CategoryFragment())
         }
     }
 
 
     private fun discardMedia(uri: Uri) {
-        val file = File(uri.path!!)
-        if (file.exists()) {
-            val deleted = file.delete()
-            if (deleted) {
-                Toast.makeText(requireContext(), "Media discarded", Toast.LENGTH_SHORT).show()
+        if (uri.scheme == "file") {
+            val file = File(uri.path!!)
+            if (file.exists()) {
+                file.delete()
                 viewModel.setEvidence(null)
                 viewModel.setIsImage(null)
-            } else {
-                Toast.makeText(requireContext(), "Failed to discard media", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Media Discarded Successfully.", Toast.LENGTH_SHORT).show()
             }
-        } else {
-            Toast.makeText(requireContext(), "File not found", Toast.LENGTH_SHORT).show()
         }
 
     }
@@ -436,18 +401,10 @@ class EvidenceFragment : Fragment() {
         binding.captureButton.visibility = View.VISIBLE
         binding.recordButton.visibility = View.VISIBLE
         binding.switchCameraButton.visibility = View.VISIBLE
+        binding.galleryButton.visibility = View.VISIBLE
         startCamera()
     }
 
-
-
-
-    private fun getOutputDirectory(): String {
-        val mediaDir = activity?.externalMediaDirs?.firstOrNull()?.let {
-            File(it, resources.getString(R.string.app_name)).apply { mkdirs() }
-        }
-        return if (mediaDir != null && mediaDir.exists()) mediaDir.absolutePath else requireContext().filesDir.absolutePath
-    }
 
 
     private fun getTempOutputDirectory(): File {
@@ -458,30 +415,63 @@ class EvidenceFragment : Fragment() {
     }
 
 
+    private val permissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val deniedPermissions = permissions.filter { !it.value }.keys
 
-    private fun checkPermissions(): Boolean {
-        val cameraPermission = ContextCompat.checkSelfPermission(
-            requireContext(),
-            android.Manifest.permission.CAMERA
-        )
-        val storagePermission = ContextCompat.checkSelfPermission(
-            requireContext(),
-            android.Manifest.permission.WRITE_EXTERNAL_STORAGE
-        )
-        val audioPermission = ContextCompat.checkSelfPermission(
-            requireContext(),
-            android.Manifest.permission.RECORD_AUDIO
-        )
-
-        return if (Build.VERSION.SDK_INT < 33) {
-            cameraPermission == PackageManager.PERMISSION_GRANTED &&
-                    storagePermission == PackageManager.PERMISSION_GRANTED &&
-                    audioPermission == PackageManager.PERMISSION_GRANTED
+        if (deniedPermissions.isEmpty()) {
+            // All permissions granted, proceed
+            startCamera()
         } else {
-            cameraPermission == PackageManager.PERMISSION_GRANTED &&
-                    audioPermission == PackageManager.PERMISSION_GRANTED
+            // Check if the user selected "Don't Ask Again"
+            val shouldShowRationale = deniedPermissions.any { permission ->
+                ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(), permission)
+            }
+
+            if (!shouldShowRationale) {
+                // User selected "Don't Ask Again" -> Show a settings dialog
+                showSettingsDialog()
+            } else {
+                // Permissions denied without "Don't Ask Again", show a toast or explanation
+                Toast.makeText(requireContext(), "Permissions are required for this feature", Toast.LENGTH_SHORT).show()
+            }
         }
     }
+
+    private fun showSettingsDialog() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Permissions Required")
+            .setMessage("This feature requires permissions. Please enable them in settings.")
+            .setPositiveButton("Go to Settings") { _, _ ->
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                val uri = Uri.fromParts("package", requireContext().packageName, null)
+                intent.data = uri
+                startActivity(intent)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+
+
+    private fun checkAndRequestPermissions() {
+        val permissions = mutableListOf(
+            Manifest.permission.CAMERA,
+            Manifest.permission.RECORD_AUDIO
+        )
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) { // Android 12 or lower
+            permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE)
+            permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        } else { // Android 13+
+            permissions.add(Manifest.permission.READ_MEDIA_IMAGES)
+            permissions.add(Manifest.permission.READ_MEDIA_VIDEO)
+        }
+
+        permissionLauncher.launch(permissions.toTypedArray())
+    }
+
 
     private fun replaceFragment(fragment : Fragment){
         parentFragmentManager.beginTransaction()

@@ -10,7 +10,6 @@ import android.view.animation.AnimationUtils
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.dcoder.prokash.viewmodel.ComplaintSubmissionViewModel
 import com.dcoder.prokash.complaintSubmissionFragment.CategoryFragment
@@ -49,8 +48,8 @@ class ComplaintSubmissionActivity : AppCompatActivity() {
             viewModel.setSelectedTab(1)
         }
 
-        viewModel.selectedTab.observe(this, Observer { tab ->
-            Log.d("selected", "onCreate: "+tab)
+        viewModel.selectedTab.observe(this) { tab ->
+            Log.d("selected", "onCreate: $tab")
             when (tab) {
                 1 -> evidenceSelected()
                 2 -> categorySelected()
@@ -58,7 +57,7 @@ class ComplaintSubmissionActivity : AppCompatActivity() {
                 4 -> locationSelected()
                 5 -> detailSelected()
             }
-        })
+        }
 
 
         binding.evidenceLayout.setOnClickListener {
@@ -121,7 +120,7 @@ class ComplaintSubmissionActivity : AppCompatActivity() {
     }
 
     private fun replaceFragment(fragment : Fragment){
-        val trans = supportFragmentManager.beginTransaction().replace(R.id.fragment_container,fragment).commit()
+        supportFragmentManager.beginTransaction().replace(R.id.fragment_container,fragment).commit()
     }
 
 

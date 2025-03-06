@@ -49,63 +49,107 @@
             android:id="@+id/previewButtons"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
             android:orientation="horizontal"
+            android:weightSum="3"
             android:visibility="gone">
 
-            <Button
+            <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/discardButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:drawableTop="@drawable/complaint_submission_evidence_discard"
+                android:text="Discard"
+                android:drawablePadding="4dp"
+                android:fontFamily="@font/poppins_medium"
+                android:padding="8dp"
+                android:textColor="@color/white"
                 android:layout_weight="1"
-                android:text="Discard" />
+                android:layout_marginEnd="2dp"
+                android:background="@drawable/evidence_btn_background"/>
 
-            <Button
+            <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/saveButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:drawableTop="@drawable/complaint_submission_evidence_save"
+                android:text="Save to gallery"
+                android:fontFamily="@font/poppins_medium"
+                android:drawablePadding="4dp"
+                android:padding="8dp"
+                android:textColor="@color/white"
                 android:layout_weight="1"
-                android:text="Save to Gallery" />
+                android:layout_marginStart="2dp"
+                android:layout_marginEnd="2dp"
+                android:background="@drawable/evidence_btn_background"/>
 
-            <Button
+            <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/nextButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:drawableTop="@drawable/complaint_submission_evidence_next"
+                android:text="Next"
+                android:fontFamily="@font/poppins_medium"
+                android:drawablePadding="4dp"
+                android:padding="8dp"
+                android:textColor="@color/white"
                 android:layout_weight="1"
-                android:text="Next" />
+                android:layout_marginStart="2dp"
+                android:background="@drawable/evidence_btn_background"/>
+
         </LinearLayout>
 
     </LinearLayout>
 
-    <Button
-        android:id="@+id/capture_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <ImageButton
+        android:id="@+id/gallery_button"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:layout_marginStart="32dp"
         android:layout_marginBottom="32dp"
-        android:text="Capture"
+        android:background="@drawable/complaint_submission_evidence_gallery"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent" />
+        app:layout_constraintStart_toStartOf="parent" />
 
-    <Button
+    <ImageButton
+        android:id="@+id/capture_button"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="64dp"
+        android:layout_marginBottom="32dp"
+        android:background="@drawable/complaint_submission_evidence_camera"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/gallery_button" />
+
+    <ImageButton
+        android:id="@+id/pause_resume_button"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="64dp"
+        android:layout_marginBottom="32dp"
+        android:background="@drawable/complaint_submission_evidence_pause"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/gallery_button" />
+
+    <ImageButton
         android:id="@+id/record_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginEnd="64dp"
+        android:layout_marginBottom="32dp"
+        android:background="@drawable/complaint_submission_evidence_video"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/switch_camera_button" />
+
+    <ImageButton
+        android:id="@+id/switch_camera_button"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:layout_marginEnd="32dp"
         android:layout_marginBottom="32dp"
-        android:text="Record"
+        android:background="@drawable/complaint_submission_evidence_switch_camera"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintRight_toRightOf="parent" />
-
-    <Button
-        android:id="@+id/switch_camera_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="32dp"
-        android:text="Switch Camera"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
