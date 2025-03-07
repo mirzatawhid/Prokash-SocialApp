@@ -30,7 +30,7 @@ import androidx.camera.video.VideoCapture
 import androidx.camera.video.VideoRecordEvent
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.activityViewModels
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
 import com.dcoder.prokash.R
@@ -63,7 +63,7 @@ class EvidenceFragment : Fragment() {
     private var isRecordingPaused = false
 
 
-    private lateinit var viewModel: ComplaintSubmissionViewModel
+    private val viewModel: ComplaintSubmissionViewModel by activityViewModels()
 
 
     override fun onCreateView(
@@ -71,7 +71,6 @@ class EvidenceFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentEvidenceBinding.inflate(inflater, container, false)
-        viewModel = ViewModelProvider(requireActivity()).get(ComplaintSubmissionViewModel::class.java)
         return binding.root
     }
 

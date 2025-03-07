@@ -6,7 +6,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.activityViewModels
 import com.dcoder.prokash.R
 import com.dcoder.prokash.adapter.SubCategoryAdapter
 import com.dcoder.prokash.databinding.FragmentSubCategoryBinding
@@ -19,7 +19,7 @@ class SubCategoryFragment : Fragment() {
     private var _binding: FragmentSubCategoryBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var viewModel: ComplaintSubmissionViewModel
+    private val viewModel: ComplaintSubmissionViewModel by activityViewModels()
 
     private lateinit var subCategoryList: List<SubCategoryModel>
     private lateinit var subCategoryAdapter: SubCategoryAdapter
@@ -30,7 +30,6 @@ class SubCategoryFragment : Fragment() {
     ): View {
 
         _binding = FragmentSubCategoryBinding.inflate(inflater, container, false)
-        viewModel = ViewModelProvider(requireActivity()).get(ComplaintSubmissionViewModel::class.java)
         //initialize sub category data
         //store this in local storage
         subCategoryList = listOf(

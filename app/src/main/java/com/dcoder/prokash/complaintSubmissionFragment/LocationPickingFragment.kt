@@ -9,7 +9,6 @@ import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import android.os.Build
 import android.os.Bundle
 import android.preference.PreferenceManager
 import android.provider.Settings
@@ -25,7 +24,7 @@ import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.widget.addTextChangedListener
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.dcoder.prokash.R
 import com.dcoder.prokash.adapter.AddressSuggestionAdapter
@@ -71,7 +70,7 @@ class LocationPickingFragment : Fragment() {
     private val debounceScope = CoroutineScope(Dispatchers.Main + Job())
     private var searchJob: Job? = null
 
-    private lateinit var viewModel: ComplaintSubmissionViewModel
+    private val viewModel: ComplaintSubmissionViewModel by activityViewModels()
 
     private val REQUEST_CHECK_SETTINGS = 1001
 
@@ -80,7 +79,6 @@ class LocationPickingFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         // Inflate the layout for this fragment
-        viewModel = ViewModelProvider(requireActivity())[ComplaintSubmissionViewModel::class.java]
         _binding = FragmentLocationPickingBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -213,15 +211,10 @@ class LocationPickingFragment : Fragment() {
     // Function to check if internet is available (Wi-Fi or Mobile Data)
     private fun isInternetAvailable(context: Context): Boolean {
         val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val network = connectivityManager.activeNetwork ?: return false
-            val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
-            return capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
-                    capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)
-        } else {
-            val networkInfo = connectivityManager.activeNetworkInfo
-            return networkInfo != null && networkInfo.isConnected
-        }
+        val network = connectivityManager.activeNetwork ?: return false
+        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+        return capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)
     }
 
     // Function to request GPS enable dialog

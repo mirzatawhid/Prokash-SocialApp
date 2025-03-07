@@ -7,7 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.activityViewModels
 import com.dcoder.prokash.R
 import com.dcoder.prokash.viewmodel.ComplaintSubmissionViewModel
 import com.dcoder.prokash.databinding.FragmentCategoryBinding
@@ -18,7 +18,7 @@ class CategoryFragment : Fragment() {
     private var _binding: FragmentCategoryBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var viewModel: ComplaintSubmissionViewModel
+    private val viewModel: ComplaintSubmissionViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -26,7 +26,6 @@ class CategoryFragment : Fragment() {
     ): View {
         // Inflate the layout for this fragment
         _binding = FragmentCategoryBinding.inflate(inflater, container, false)
-        viewModel = ViewModelProvider(requireActivity()).get(ComplaintSubmissionViewModel::class.java)
         return binding.root
     }
 
